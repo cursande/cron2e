@@ -38,8 +38,8 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 	awsCronTestCases := []string{
 		"cron(15 10 * * ? *)",
 		"cron(0 8 1 * ? *)",
-		// "cron(0 18 ? * MON-FRI *)",
-		// "cron(0 9 ? * 2#1 *)",
+		"cron(0 18 ? * MON-FRI *)",
+		"cron(0 9 ? * 2#1 *)",
 	}
 
 	for _, expr := range awsCronTestCases {
