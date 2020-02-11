@@ -7,37 +7,26 @@ import (
 	"strings"
 )
 
-
 type Parser interface {
-	parse()
-}
-
-type StandardCronParser struct {
-	expr string
-	err  error
+	parse(string) (*CronBreakdown, error)
 }
 
 type PredefinedCronParser struct {
 	expr string
-	err  error
 }
 
 type IntervalCronParser struct {
 	expr string
-	err  error
 }
 
 type AWSCronParser struct {
 	expr string
-	err  error
 }
 
 type AWSRateParser struct {
 	expr string
-	err  error
 }
 
-// FIXME: need to break below into individual patterns for days, months etc. Will be gross though
 const standardCron string = `(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|((?i)mon|tue|wed|thur|fri|sat|sun)|((?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|\*) ?){5,7}`
 
 const predefinedCron string = `@(annually|yearly|monthly|weekly|daily|hourly|reboot)`
@@ -53,8 +42,7 @@ func matchCronFormat(pattern string, expr string) bool {
 	return r.MatchString(expr)
 }
 
-// TODO: Find a better way to manage flow here
-func FindParserForExpression(expr string) (parser interface{}, err error) {
+func ParserForExpression(expr string) (parser interface{}, err error) {
 	if strings.Contains(expr, "cron(") || strings.Contains(expr, "rate(") {
 		if matchCronFormat(awsStandardCron, expr) {
 			return &AWSCronParser{expr: expr}, nil

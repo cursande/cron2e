@@ -20,14 +20,14 @@ func TestFindParserForStandardExpression(t *testing.T) {
 	}
 
 	for _, expr := range standardTestCases {
-		parser, err := FindParserForExpression(expr)
+		parser, err := ParserForExpression(expr)
 
 		assert.Equal(err, nil)
 
 		assert.Equal(
 			&StandardCronParser{expr: expr},
 			parser,
-			"it should return the correct parser for a standard cron expression",
+			"it returns the correct parser for a standard cron expression",
 		)
 	}
 }
@@ -43,14 +43,14 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 	}
 
 	for _, expr := range awsCronTestCases {
-		parser, err := FindParserForExpression(expr)
+		parser, err := ParserForExpression(expr)
 
 		assert.Equal(err, nil)
 
 		assert.Equal(
 			&AWSCronParser{expr: expr},
 			parser,
-			"it should return the correct parser for an AWS cron expression",
+			"it returns the correct parser for an AWS cron expression",
 		)
 	}
 }
@@ -65,15 +65,14 @@ func TestFindParserForAWSRateExpression(t *testing.T) {
 	}
 
 	for _, expr := range awsRateTestCases {
-		parser, err := FindParserForExpression(expr)
+		parser, err := ParserForExpression(expr)
 
 		assert.Equal(err, nil)
 
 		assert.Equal(
 			&AWSRateParser{expr: expr},
 			parser,
-			"it should return the correct parser for an AWS cron expression",
+			"it returns the correct parser for an AWS cron expression",
 		)
 	}
 }
-
