@@ -37,6 +37,14 @@ var monthAliases = map[string]int{
 	"DEC": 12,
 }
 
+func numorWildcardToInt(val string) (newVal int, err error) {
+	if val == "*" {
+		return -1, nil
+	} else {
+		return strconv.Atoi(val)
+	}
+}
+
 // Coerces an int from string to its appropriate form, using an alias if appropriate e.g. "JUL", "SAT"
 func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 	if len(alias) != 0 {
@@ -49,10 +57,10 @@ func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 				return newVal, nil
 			}
 		} else {
-			return strconv.Atoi(val)
+			return numorWildcardToInt(val)
 		}
 	} else {
-		return strconv.Atoi(val)
+		return numorWildcardToInt(val)
 	}
 
 	return 0, errors.New(fmt.Sprintf("There was an unknown problem coercing the value '%s'", val))
