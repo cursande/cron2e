@@ -37,7 +37,7 @@ var monthAliases = map[string]int{
 	"DEC": 12,
 }
 
-func numorWildcardToInt(val string) (newVal int, err error) {
+func stringValToInt(val string) (newVal int, err error) {
 	if val == "*" {
 		return -1, nil
 	} else {
@@ -57,10 +57,10 @@ func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 				return newVal, nil
 			}
 		} else {
-			return numorWildcardToInt(val)
+			return stringValToInt(val)
 		}
 	} else {
-		return numorWildcardToInt(val)
+		return stringValToInt(val)
 	}
 
 	return 0, errors.New(fmt.Sprintf("There was an unknown problem coercing the value '%s'", val))
@@ -71,7 +71,8 @@ func coerceVals(elts string, alias map[string]int) (newVals []int, err error) {
 	if strings.ContainsRune(elts, ',') {
 		vals := strings.Split(elts, ",")
 
-		for _, val := range vals {
+		for i := 0; i < len(vals); i++ {
+			val := vals[i]
 			coerced, err := coerceVal(val, alias)
 
 			if err != nil {

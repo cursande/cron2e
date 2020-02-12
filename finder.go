@@ -8,7 +8,7 @@ import (
 )
 
 type Parser interface {
-	parse(string) (*CronBreakdown, error)
+	parse() (*CronBreakdown, error)
 }
 
 type PredefinedCronParser struct {
