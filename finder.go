@@ -7,24 +7,8 @@ import (
 	"strings"
 )
 
-type Parser interface {
+type parser interface {
 	parse() (*CronBreakdown, error)
-}
-
-type PredefinedCronParser struct {
-	expr string
-}
-
-type IntervalCronParser struct {
-	expr string
-}
-
-type AWSCronParser struct {
-	expr string
-}
-
-type AWSRateParser struct {
-	expr string
 }
 
 const standardCron string = `(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|((?i)mon|tue|wed|thur|fri|sat|sun)|((?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|\*) ?){5,7}`
@@ -42,10 +26,10 @@ func matchCronFormat(pattern string, expr string) bool {
 	return r.MatchString(expr)
 }
 
-func ParserForExpression(expr string) (parser interface{}, err error) {
+func ParserForExpression(expr string) (parser interface{parser}, err error) {
 	if strings.Contains(expr, "cron(") || strings.Contains(expr, "rate(") {
 		if matchCronFormat(awsStandardCron, expr) {
-			return &AWSCronParser{expr: expr}, nil
+			return &AWSStandardParser{expr: expr}, nil
 		}
 
 		if matchCronFormat(awsRateCron, expr) {

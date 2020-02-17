@@ -48,7 +48,7 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 		assert.Equal(err, nil)
 
 		assert.Equal(
-			&AWSCronParser{expr: expr},
+			&AWSStandardParser{expr: expr},
 			parser,
 			"it returns the correct parser for an AWS cron expression",
 		)
