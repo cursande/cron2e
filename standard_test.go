@@ -16,9 +16,9 @@ func TestStandardCronParser(t *testing.T) {
 	breakdown := &CronBreakdown{
 		minute: CronField{fieldVals: []int{5}},
 		hour: CronField{fieldVals: []int{0}},
-		dayMonth: CronField{fieldVals: []int{-1}},
+		dayMonth: CronField{fieldVals: []int{Wildcard}},
 		month: CronField{fieldVals: []int{8}},
-		dayWeek: CronField{fieldVals: []int{-1}},
+		dayWeek: CronField{fieldVals: []int{Wildcard}},
 	}
 
 	assert.Equal(err, nil)

@@ -1,7 +1,6 @@
 package cron2e
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,13 +12,13 @@ type StandardCronParser struct {
 }
 
 var dayWeekAliases = map[string]int{
-	"SUN": 1,
-	"MON": 2,
-	"TUE": 3,
-	"WED": 4,
-	"THU": 5,
-	"FRI": 6,
-	"SAT": 7,
+	"SUN": 0,
+	"MON": 1,
+	"TUE": 2,
+	"WED": 3,
+	"THU": 4,
+	"FRI": 5,
+	"SAT": 6,
 }
 
 var monthAliases = map[string]int{
@@ -39,7 +38,7 @@ var monthAliases = map[string]int{
 
 func stringValToInt(val string) (newVal int, err error) {
 	if val == "*" {
-		return -1, nil
+		return Wildcard, nil
 	} else {
 		return strconv.Atoi(val)
 	}
@@ -63,7 +62,7 @@ func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 		return stringValToInt(val)
 	}
 
-	return 0, errors.New(fmt.Sprintf("There was an unknown problem coercing the value '%s'", val))
+	return
 }
 
 // Coerces a string into a representation of coerced field values
@@ -96,18 +95,18 @@ func coerceVals(elts string, alias map[string]int) (newVals []int, err error) {
 	}
 }
 
-func determineAlias(fieldType int) (alias map[string]int) {
+func determineAlias(fieldType uint8) (alias map[string]int) {
 	switch fieldType {
-	case 4:
+	case Month:
 		return monthAliases
-	case 5:
+	case DayWeek:
 		return dayWeekAliases
 	default:
 		return nil
 	}
 }
 
-func convertAndSetField(expr string, fieldType int) (fieldVals []int, postSepFieldVals []int, sep rune, err error) {
+func convertAndSetField(expr string, fieldType uint8) (fieldVals []int, postSepFieldVals []int, sep rune, err error) {
 	alias := determineAlias(fieldType)
 
 	if strings.ContainsRune(expr, '/') {
@@ -172,19 +171,19 @@ func (parser *StandardCronParser) parse() (cb *CronBreakdown, parseErr error) {
 	default:
 		// TODO: Clean this up
 		minutes := BuildCronField()
-		minutes.fieldVals, minutes.postSepFieldVals, minutes.sep, parseErr = convertAndSetField(tokens[0], 1)
+		minutes.fieldVals, minutes.postSepFieldVals, minutes.sep, parseErr = convertAndSetField(tokens[0], Minute)
 
 		hours := BuildCronField()
-		hours.fieldVals, hours.postSepFieldVals, hours.sep, parseErr = convertAndSetField(tokens[1], 2)
+		hours.fieldVals, hours.postSepFieldVals, hours.sep, parseErr = convertAndSetField(tokens[1], Hour)
 
 		dayMonths := BuildCronField()
-		dayMonths.fieldVals, dayMonths.postSepFieldVals, dayMonths.sep, parseErr = convertAndSetField(tokens[2], 3)
+		dayMonths.fieldVals, dayMonths.postSepFieldVals, dayMonths.sep, parseErr = convertAndSetField(tokens[2], DayMonth)
 
 		months := BuildCronField()
-		months.fieldVals, months.postSepFieldVals, months.sep, parseErr = convertAndSetField(tokens[3], 4)
+		months.fieldVals, months.postSepFieldVals, months.sep, parseErr = convertAndSetField(tokens[3], Month)
 
 		dayWeeks := BuildCronField()
-		dayWeeks.fieldVals, dayWeeks.postSepFieldVals, dayWeeks.sep, parseErr = convertAndSetField(tokens[4], 5)
+		dayWeeks.fieldVals, dayWeeks.postSepFieldVals, dayWeeks.sep, parseErr = convertAndSetField(tokens[4], DayWeek)
 
 		cb.minute = minutes
 		cb.hour = hours
