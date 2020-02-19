@@ -72,7 +72,9 @@ func TestValidate(t *testing.T) {
 		},
 		months: []CronValue{
 			{
-				fieldVal: 13,
+				fieldVal: Wildcard,
+				postSepFieldVal: 10,
+				sep: '-',
 			},
 		},
 		dayWeeks: []CronValue{
@@ -90,7 +92,7 @@ func TestValidate(t *testing.T) {
 		[]error{
 			errors.New("The minute '65' is invalid"),
 			errors.New("The month-day '32' is invalid"),
-			errors.New("The month '13' is invalid"),
+			errors.New("A wildcard cannot be used in a range expression"),
 		},
 		cb.validationErrs,
 	)

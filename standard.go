@@ -65,7 +65,7 @@ func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 	return
 }
 
-func determineAlias(fieldType uint8) (alias map[string]int) {
+func determineStandardAlias(fieldType uint8) (alias map[string]int) {
 	switch fieldType {
 	case Month:
 		return monthAliases
@@ -97,7 +97,7 @@ func buildValueFromPair(pair []string, alias map[string]int, sep rune) (cv CronV
 
 // Coerces a string token into a representation of coerced field values
 func tokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
-	alias := determineAlias(fieldType)
+	alias := determineStandardAlias(fieldType)
 	fields := strings.Split(token, ",")
 
 	for i := 0; i < len(fields); i++ {

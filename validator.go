@@ -51,6 +51,22 @@ func validateDayWeek(val int) (valid bool, validationErr error) {
 	return false, errorMessage("weekday", val)
 }
 
+func validateWildcardNotPostSepFieldVal(cv CronValue) (valid bool, validationErr error) {
+	if cv.postSepFieldVal != Wildcard {
+		return true, nil
+	}
+
+	return false, errors.New("A wildcard cannot be used as a post-separator value")
+}
+
+func validateRangeWithoutWildcard(cv CronValue) (valid bool, validationErr error) {
+	if !(cv.sep == '-' && cv.fieldVal == Wildcard) {
+		return true, nil
+	}
+
+	return false, errors.New("A wildcard cannot be used in a range expression")
+}
+
 func validateCronValue(cv CronValue, validator func(int) (bool, error)) (valid bool, err error) {
 	valid, err = validator(cv.fieldVal)
 
@@ -79,6 +95,11 @@ func validateField(cvs []CronValue, validator func(int) (bool, error)) (valid bo
 	return true, nil
 }
 
+var genericValidations = []func(CronValue) (bool, error) {
+	validateWildcardNotPostSepFieldVal,
+	validateRangeWithoutWildcard,
+}
+
 func Validate(cb *CronBreakdown) (isValid bool) {
 	validations := []struct {
 		field     []CronValue
@@ -92,6 +113,20 @@ func Validate(cb *CronBreakdown) (isValid bool) {
 	}
 
 	for _, v := range validations {
+
+		// higher-level validations for all fields
+		for _, gv := range genericValidations {
+			for _, cv := range v.field {
+				valid, err := gv(cv)
+
+				if !valid {
+					cb.validationErrs = append(cb.validationErrs, err)
+				}
+			}
+
+		}
+
+		// field-specific validations on values
 		valid, err := validateField(v.field, v.validator)
 
 		if !valid {
