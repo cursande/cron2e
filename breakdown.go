@@ -11,24 +11,23 @@ const (
 	DayWeek  uint8 = 5
 )
 
-// int value of -1 => '*'
-type CronField struct {
-	fieldVals        []int
-	postSepFieldVals []int
-	sep              rune
+type CronValue struct {
+	fieldVal        int
+	postSepFieldVal int
+	sep             rune
 }
 
 type CronBreakdown struct {
-	minute         CronField
-	hour           CronField
-	dayMonth       CronField
-	month          CronField
-	dayWeek        CronField
+	minutes        []CronValue
+	hours          []CronValue
+	dayMonths      []CronValue
+	months         []CronValue
+	dayWeeks       []CronValue
 	validationErrs []error
 }
 
-func BuildCronField() (cf CronField) {
-	cf = CronField{}
+func BuildCronValue() (cv CronValue) {
+	cv = CronValue{}
 
 	return
 }

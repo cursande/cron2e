@@ -28,16 +28,18 @@ func TestValidateMinute(t *testing.T) {
 	}
 }
 
-func TestValidateFieldVals(t *testing.T) {
+func TestValidateField(t *testing.T) {
 	assert := assert.New(t)
 
-	min := CronField{
-		fieldVals:        []int{5},
-		postSepFieldVals: []int{68},
-		sep:              '/',
+	min := []CronValue{
+		{
+			fieldVal:        5,
+			postSepFieldVal: 68,
+			sep:             '/',
+		},
 	}
 
-	valid, err := validateFieldVals(min, validateMinute)
+	valid, err := validateField(min, validateMinute)
 
 	assert.Equal(false, valid)
 	assert.Equal(errors.New("The minute '68' is invalid"), err)
@@ -47,24 +49,36 @@ func TestValidate(t *testing.T) {
 	assert := assert.New(t)
 
 	cb := &CronBreakdown{
-		minute: CronField{
-			fieldVals:        []int{5},
-			postSepFieldVals: []int{65},
+		minutes: []CronValue{
+			{
+				fieldVal:        5,
+				postSepFieldVal: 65,
+				sep:             '-',
+			},
 		},
-		hour: CronField{
-			fieldVals:        []int{-1},
-			postSepFieldVals: []int{6},
+		hours: []CronValue{
+			{
+				fieldVal:        5,
+				postSepFieldVal: 10,
+				sep:             '-',
+			},
 		},
-		dayMonth: CronField{
-			fieldVals:        []int{-1},
-			postSepFieldVals: []int{32},
+		dayMonths: []CronValue{
+			{
+				fieldVal:        Wildcard,
+				postSepFieldVal: 32,
+				sep:             '/',
+			},
 		},
-		month: CronField{
-			fieldVals:        []int{6},
-			postSepFieldVals: []int{13},
+		months: []CronValue{
+			{
+				fieldVal: 13,
+			},
 		},
-		dayWeek: CronField{
-			fieldVals: []int{-1},
+		dayWeeks: []CronValue{
+			{
+				fieldVal: Wildcard,
+			},
 		},
 	}
 

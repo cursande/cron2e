@@ -1,10 +1,10 @@
 package cron2e
 
 import (
+	"errors"
 	"regexp"
 	"strconv"
 	"strings"
-	"errors"
 )
 
 type StandardCronParser struct {
@@ -65,36 +65,6 @@ func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 	return
 }
 
-// Coerces a string into a representation of coerced field values
-func coerceVals(elts string, alias map[string]int) (newVals []int, err error) {
-	if strings.ContainsRune(elts, ',') {
-		vals := strings.Split(elts, ",")
-
-		for i := 0; i < len(vals); i++ {
-			val := vals[i]
-			coerced, err := coerceVal(val, alias)
-
-			if err != nil {
-				return nil, err
-			}
-
-			newVals = append(newVals, coerced)
-		}
-
-		return newVals, nil
-	} else {
-		coerced, err := coerceVal(elts, alias)
-
-		if err != nil {
-			return nil, err
-		} else {
-			newVals = append(newVals, coerced)
-		}
-
-		return newVals, nil
-	}
-}
-
 func determineAlias(fieldType uint8) (alias map[string]int) {
 	switch fieldType {
 	case Month:
@@ -106,59 +76,70 @@ func determineAlias(fieldType uint8) (alias map[string]int) {
 	}
 }
 
-func convertAndSetField(expr string, fieldType uint8) (fieldVals []int, postSepFieldVals []int, sep rune, err error) {
-	alias := determineAlias(fieldType)
+func buildValueFromPair(pair []string, alias map[string]int, sep rune) (cv CronValue, err error) {
+	cv = BuildCronValue()
+	cv.sep = sep
 
-	if strings.ContainsRune(expr, '/') {
-		elts := strings.Split(expr, "/")
-
-		first, err := coerceVals(elts[0], alias)
-
-		if err != nil {
-			fieldVals = first
-		}
-
-		second, err := coerceVals(elts[1], alias)
-
-		if err != nil {
-			postSepFieldVals = second
-		}
-
-		return fieldVals, postSepFieldVals, '/', nil
-
-	} else if strings.ContainsRune(expr, '-') {
-		elts := strings.Split(expr, "-")
-
-		first, err := coerceVals(elts[0], alias)
-
-		if err != nil {
-			fieldVals = first
-		}
-
-		second, err := coerceVals(elts[1], alias)
-
-		if err != nil {
-			postSepFieldVals = second
-		}
-
-		return fieldVals, postSepFieldVals, '-', nil
-
-	} else {
-		fieldVals, err = coerceVals(expr, alias)
-
-		return fieldVals, nil, 0, nil
+	coerced, err := coerceVal(pair[0], alias)
+	if err != nil {
+		return cv, err
 	}
+	cv.fieldVal = coerced
 
-	return
+	coerced, err = coerceVal(pair[1], alias)
+	if err != nil {
+		return cv, err
+	}
+	cv.postSepFieldVal = coerced
+
+	return cv, nil
 }
 
-// field types:
-// 1 - Minute
-// 2 - Hour
-// 3 - DayMonth
-// 4 - Month
-// 5 - DayWeek
-// When integrated, 0 and 6 will be seconds and years respectively.
+// Coerces a string token into a representation of coerced field values
+func tokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
+	alias := determineAlias(fieldType)
+	fields := strings.Split(token, ",")
+
+	for i := 0; i < len(fields); i++ {
+		field := fields[i]
+
+		if strings.ContainsRune(field, '-') {
+			pair := strings.Split(field, "-")
+
+			cv, err := buildValueFromPair(pair, alias, '-')
+
+			if err != nil {
+				return nil, err
+			}
+
+			cvs = append(cvs, cv)
+		} else if strings.ContainsRune(field, '/') {
+			pair := strings.Split(field, "/")
+
+			cv, err := buildValueFromPair(pair, alias, '/')
+
+			if err != nil {
+				return nil, err
+			}
+
+			cvs = append(cvs, cv)
+		} else {
+			cv := BuildCronValue()
+
+			coerced, err := coerceVal(field, alias)
+
+			if err != nil {
+				return nil, err
+			}
+
+			cv.fieldVal = coerced
+			cvs = append(cvs, cv)
+		}
+	}
+
+	return cvs, nil
+}
+
 func (parser *StandardCronParser) parse() (cb *CronBreakdown, parseErr error) {
 	cb = BuildBreakdown()
 	tokens := strings.Split(parser.expr, ` `)
@@ -169,31 +150,15 @@ func (parser *StandardCronParser) parse() (cb *CronBreakdown, parseErr error) {
 	case 6:
 		return nil, errors.New("not implemented!")
 	default:
-		// TODO: Clean this up
-		minutes := BuildCronField()
-		minutes.fieldVals, minutes.postSepFieldVals, minutes.sep, parseErr = convertAndSetField(tokens[0], Minute)
+		cb.minutes, parseErr = tokenToField(tokens[0], Minute)
+		cb.hours, parseErr = tokenToField(tokens[1], Hour)
+		cb.dayMonths, parseErr = tokenToField(tokens[2], DayMonth)
+		cb.months, parseErr = tokenToField(tokens[3], Month)
+		cb.dayWeeks, parseErr = tokenToField(tokens[4], DayWeek)
 
-		hours := BuildCronField()
-		hours.fieldVals, hours.postSepFieldVals, hours.sep, parseErr = convertAndSetField(tokens[1], Hour)
-
-		dayMonths := BuildCronField()
-		dayMonths.fieldVals, dayMonths.postSepFieldVals, dayMonths.sep, parseErr = convertAndSetField(tokens[2], DayMonth)
-
-		months := BuildCronField()
-		months.fieldVals, months.postSepFieldVals, months.sep, parseErr = convertAndSetField(tokens[3], Month)
-
-		dayWeeks := BuildCronField()
-		dayWeeks.fieldVals, dayWeeks.postSepFieldVals, dayWeeks.sep, parseErr = convertAndSetField(tokens[4], DayWeek)
-
-		cb.minute = minutes
-		cb.hour = hours
-		cb.dayMonth = dayMonths
-		cb.dayWeek = dayWeeks
-		cb.month = months
-	}
-
-	if parseErr != nil {
-		return nil, parseErr
+		if parseErr != nil {
+			return nil, parseErr
+		}
 	}
 
 	return cb, nil

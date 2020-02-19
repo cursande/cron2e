@@ -6,7 +6,7 @@ import (
 )
 
 func errorMessage(fieldName string, val int) error {
-	return errors.New(fmt.Sprintf("The %s '%d' is invalid", fieldName ,val))
+	return errors.New(fmt.Sprintf("The %s '%d' is invalid", fieldName, val))
 }
 
 func validateMinute(val int) (valid bool, validationErr error) {
@@ -51,21 +51,25 @@ func validateDayWeek(val int) (valid bool, validationErr error) {
 	return false, errorMessage("weekday", val)
 }
 
-func validateFieldVals(cf CronField, validator func(int) (bool, error)) (valid bool, validationErr error) {
-	for i := 0; i < len(cf.fieldVals); i++ {
-		val := cf.fieldVals[i]
+func validateCronValue(cv CronValue, validator func(int) (bool, error)) (valid bool, err error) {
+	valid, err = validator(cv.fieldVal)
 
-		valid, err := validator(val)
-
-		if !valid {
-			return false, err
-		}
+	if !valid {
+		return false, err
 	}
 
-	for i := 0; i < len(cf.postSepFieldVals); i++ {
-		val := cf.postSepFieldVals[i]
+	valid, err = validator(cv.postSepFieldVal)
 
-		valid, err := validator(val)
+	if !valid {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func validateField(cvs []CronValue, validator func(int) (bool, error)) (valid bool, validationErr error) {
+	for i := 0; i < len(cvs); i++ {
+		valid, err := validateCronValue(cvs[i], validator)
 
 		if !valid {
 			return false, err
@@ -77,18 +81,18 @@ func validateFieldVals(cf CronField, validator func(int) (bool, error)) (valid b
 
 func Validate(cb *CronBreakdown) (isValid bool) {
 	validations := []struct {
-		field     CronField
+		field     []CronValue
 		validator func(int) (bool, error)
 	}{
-		{cb.minute, validateMinute},
-		{cb.hour, validateHour},
-		{cb.dayMonth, validateDayMonth},
-		{cb.month, validateMonth},
-		{cb.dayWeek, validateDayWeek},
+		{cb.minutes, validateMinute},
+		{cb.hours, validateHour},
+		{cb.dayMonths, validateDayMonth},
+		{cb.months, validateMonth},
+		{cb.dayWeeks, validateDayWeek},
 	}
 
 	for _, v := range validations {
-		valid, err := validateFieldVals(v.field, v.validator)
+		valid, err := validateField(v.field, v.validator)
 
 		if !valid {
 			cb.validationErrs = append(cb.validationErrs, err)
