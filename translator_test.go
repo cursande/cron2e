@@ -34,6 +34,11 @@ func TestFieldToStr(t *testing.T) {
 			Minute,
 			"every 5th minute",
 		},
+		{
+			[]CronValue{{fieldVal: Wildcard, postSepFieldVal: 1, sep: '/'}},
+			Hour,
+			"every hour",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -54,8 +59,6 @@ func TestTranslate(t *testing.T) {
 		months:    []CronValue{{fieldVal: 8, postSepFieldVal: 9, sep: '-'}},
 		dayWeeks:  []CronValue{{fieldVal: Wildcard}},
 	}
-
-	assert.Equal(cb, cb)
 
 	result, err := Translate(cb)
 

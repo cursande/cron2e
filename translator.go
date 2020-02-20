@@ -48,21 +48,25 @@ var typesToPluralStr = map[uint8]string{
 }
 
 func ordinal(val int) string {
+	if val == 1 {
+		return ""
+	}
+
 	valToS := strconv.Itoa(val)
 
 	ones := val % 10
 	tens := val % 100
 
-	suffix := "th"
+	suffix := "th "
 
 	if tens < 11 || tens > 13 {
 		switch ones {
 		case 1:
-			suffix = "st"
+			suffix = "st "
 		case 2:
-			suffix = "nd"
+			suffix = "nd "
 		case 3:
-			suffix = "rd"
+			suffix = "rd "
 		}
 	}
 
@@ -108,14 +112,14 @@ func stepToStr(cv CronValue, fieldType uint8) string {
 	interval := ordinal(cv.postSepFieldVal)
 
 	if cv.fieldVal == Wildcard {
-		return fmt.Sprintf("every %s %s", interval, typesToSingularStr[fieldType])
+		return fmt.Sprintf("every %s%s", interval, typesToSingularStr[fieldType])
 	} else {
 		startRange := valueToStr(cv.fieldVal, alias)
 
-		return fmt.Sprintf("every %s %s, starting from %s", interval, typesToSingularStr[fieldType], startRange)
+		return fmt.Sprintf("every %s%s, starting from %s", interval, typesToSingularStr[fieldType], startRange)
 	}
 
-	return fmt.Sprintf("every %s %s", interval, typesToPluralStr[fieldType])
+	return fmt.Sprintf("every %s%s", interval, typesToPluralStr[fieldType])
 }
 
 func rangeToStr(cv CronValue, fieldType uint8) string {
@@ -166,7 +170,7 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 
 	phrase := strings.Join(parts, " and ")
 
-	if noSeparatorsInField(cvs) {
+	if noSeparatorsInField(cvs) && len(parts) > 1 {
 		switch fieldType {
 		case Month:
 			return strings.Join([]string{"in", phrase}, " ")
@@ -212,6 +216,17 @@ func combineMinuteAndHour(minutes []CronValue, hours []CronValue) string {
 	return fmt.Sprintf("at %s:%s", hour, minute)
 }
 
+func removeBlank(segments []string) (res []string) {
+	for i := 0; i < len(segments); i++ {
+		seg := segments[i]
+		if seg != "" {
+			res = append(res, seg)
+		}
+	}
+
+	return res
+}
+
 // Translation is implemented as a decision-tree, which short circuits field translation on specific conditions e.g.
 // if all of month, day of the month and weekday are wildcard values, we can just add "every day" and
 // skip generating sentence segments for those fields.
@@ -236,6 +251,6 @@ func Translate(cb *CronBreakdown) (translation string, err error) {
 		segments = append(segments, FieldToStr(cb.minutes, Minute))
 	}
 
-	translation = strings.Join(segments, ", ")
+	translation = strings.Join(removeBlank(segments), ", ")
 	return fmt.Sprintf("Runs %s", translation), nil
 }
