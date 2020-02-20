@@ -49,5 +49,5 @@ func ParserForExpression(expr string) (parser interface{parser}, err error) {
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("Unrecognised or invalid cron format: %s", expr))
+	return nil, errors.New(fmt.Sprintf("Unrecognised or invalid cron format: '%s'", expr))
 }
