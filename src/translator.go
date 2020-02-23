@@ -86,7 +86,7 @@ func determineTranslationAlias(fieldType uint8) (alias map[int]string) {
 
 func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 	for i := 0; i < len(cvs); i++ {
-		if (cvs[i] == CronValue{fieldVal: Wildcard}) {
+		if (cvs[i] == CronValue{fieldVal: Wildcard, postSepFieldVal: Unset}) {
 			return true
 		}
 	}
@@ -194,7 +194,7 @@ func canFormatTimeOfDay(minutes []CronValue, hours []CronValue) bool {
 		return false
 	}
 
-	if minute.postSepFieldVal != 0 || hour.postSepFieldVal != 0 {
+	if minute.postSepFieldVal != Unset || hour.postSepFieldVal != Unset {
 		return false
 	}
 
@@ -209,11 +209,7 @@ func combineMinuteAndHour(minutes []CronValue, hours []CronValue) string {
 	minute := strconv.Itoa(minutes[0].fieldVal)
 	hour := strconv.Itoa(hours[0].fieldVal)
 
-	if hours[0].fieldVal < 10 {
-		return (fmt.Sprintf("at %02s:%s", hour, minute))
-	}
-
-	return fmt.Sprintf("at %s:%s", hour, minute)
+	return (fmt.Sprintf("at %02s:%02s", hour, minute))
 }
 
 func removeBlank(segments []string) (res []string) {
@@ -251,6 +247,6 @@ func Translate(cb *CronBreakdown) (translation string, err error) {
 		segments = append(segments, FieldToStr(cb.minutes, Minute))
 	}
 
-	translation = strings.Join(removeBlank(segments), ", ")
+	translation = strings.Join(removeBlank(segments), " ")
 	return fmt.Sprintf("Runs %s", translation), nil
 }

@@ -67,11 +67,23 @@ func validateRangeWithoutWildcard(cv CronValue) (valid bool, validationErr error
 	return false, errors.New("A wildcard cannot be used in a range expression")
 }
 
+func validatePostSepIsNotZero(cv CronValue) (valid bool, validationErr error) {
+	if !(cv.fieldVal == 0 && cv.postSepFieldVal == 0 && cv.sep == '-') {
+		return true, nil
+	}
+
+	return false, errors.New("0 cannot be the post-separator value in a range or step expression")
+}
+
 func validateCronValue(cv CronValue, validator func(int) (bool, error)) (valid bool, err error) {
 	valid, err = validator(cv.fieldVal)
 
 	if !valid {
 		return false, err
+	}
+
+	if cv.postSepFieldVal == Unset {
+		return true, nil
 	}
 
 	valid, err = validator(cv.postSepFieldVal)
@@ -98,6 +110,7 @@ func validateField(cvs []CronValue, validator func(int) (bool, error)) (valid bo
 var genericValidations = []func(CronValue) (bool, error) {
 	validateWildcardNotPostSepFieldVal,
 	validateRangeWithoutWildcard,
+	validatePostSepIsNotZero,
 }
 
 func Validate(cb *CronBreakdown) (isValid bool) {

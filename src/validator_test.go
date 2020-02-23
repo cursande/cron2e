@@ -72,14 +72,15 @@ func TestValidate(t *testing.T) {
 		},
 		months: []CronValue{
 			{
-				fieldVal: Wildcard,
+				fieldVal:        Wildcard,
 				postSepFieldVal: 10,
-				sep: '-',
+				sep:             '-',
 			},
 		},
 		dayWeeks: []CronValue{
 			{
-				fieldVal: Wildcard,
+				fieldVal:        Wildcard,
+				postSepFieldVal: Unset,
 			},
 		},
 	}

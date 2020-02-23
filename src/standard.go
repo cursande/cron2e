@@ -133,6 +133,8 @@ func tokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 			}
 
 			cv.fieldVal = coerced
+			cv.postSepFieldVal = Unset
+
 			cvs = append(cvs, cv)
 		}
 	}
@@ -143,6 +145,11 @@ func tokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 func (parser *StandardCronParser) parse() (cb *CronBreakdown, parseErr error) {
 	cb = BuildBreakdown()
 	tokens := strings.Split(parser.expr, ` `)
+
+	// This can be removed when we update the regex to prevent an expression like '5 15 3 *' being recognised as a valid format
+	if len(tokens) < 5 {
+		return nil, errors.New("Invalid standard expression, ensure you have enough values in your schedule")
+	}
 
 	switch len(tokens) {
 	case 7:

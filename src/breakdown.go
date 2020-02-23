@@ -1,6 +1,9 @@
 package cron2e
 
-const Wildcard int = -1
+const (
+	Wildcard int = -1
+	Unset    int = -2
+)
 
 // When referring to specific field types.
 const (
