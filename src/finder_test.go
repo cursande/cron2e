@@ -17,12 +17,14 @@ func TestFindParserForStandardExpression(t *testing.T) {
 		"23 0-20/2 * * *",
 		"5 4 * * sun",
 		"0 0,12 1 */2 *",
+		"5 0 * feb-jun *",
+		"0 */4 * * *",
 	}
 
 	for _, expr := range standardTestCases {
 		parser, err := ParserForExpression(expr)
 
-		assert.Equal(err, nil)
+		assert.Equal( nil, err)
 
 		assert.Equal(
 			&StandardCronParser{expr: expr},
@@ -45,7 +47,7 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 	for _, expr := range awsCronTestCases {
 		parser, err := ParserForExpression(expr)
 
-		assert.Equal(err, nil)
+		assert.Equal(nil, err)
 
 		assert.Equal(
 			&AWSStandardParser{expr: expr},
@@ -67,7 +69,7 @@ func TestFindParserForAWSRateExpression(t *testing.T) {
 	for _, expr := range awsRateTestCases {
 		parser, err := ParserForExpression(expr)
 
-		assert.Equal(err, nil)
+		assert.Equal(nil, err)
 
 		assert.Equal(
 			&AWSRateParser{expr: expr},

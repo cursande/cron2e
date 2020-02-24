@@ -42,7 +42,7 @@ func TestStandardCronParser(t *testing.T) {
 
 		breakdown := tc.expected
 
-		assert.Equal(err, nil)
+		assert.Equal(nil, err)
 		assert.Equal(
 			breakdown,
 			result,

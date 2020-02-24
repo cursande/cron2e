@@ -11,7 +11,7 @@ type parser interface {
 	parse() (*CronBreakdown, error)
 }
 
-const standardCron string = `(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|((?i)mon|tue|wed|thur|fri|sat|sun)|((?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|\*) ?){5,7}`
+const standardCron string = `((\*|((?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|(\d+|((?i)mon|tue|wed|thur|fri|sat|sun))((\/|\-){0,1}(\d+|((?i)mon|tue|wed|thur|fri|sat|sun)|((?i)jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)))?)?){5,7}`
 
 const predefinedCron string = `@(annually|yearly|monthly|weekly|daily|hourly|reboot)`
 

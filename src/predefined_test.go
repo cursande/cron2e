@@ -21,7 +21,7 @@ func TestPredefinedCronParser(t *testing.T) {
 		dayWeeks:  []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
 	}
 
-	assert.Equal(err, nil)
+	assert.Equal(nil, err)
 
 	assert.Equal(
 		breakdown,

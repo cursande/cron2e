@@ -68,7 +68,7 @@ func validateRangeWithoutWildcard(cv CronValue) (valid bool, validationErr error
 }
 
 func validatePostSepIsNotZero(cv CronValue) (valid bool, validationErr error) {
-	if !(cv.fieldVal == 0 && cv.postSepFieldVal == 0 && cv.sep == '-') {
+	if !(cv.postSepFieldVal == 0 && cv.sep != 0) {
 		return true, nil
 	}
 

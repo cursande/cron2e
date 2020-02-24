@@ -62,6 +62,6 @@ func TestTranslate(t *testing.T) {
 
 	result, err := Translate(cb)
 
-	assert.Equal(err, nil)
+	assert.Equal(nil, err)
 	assert.Equal("Runs from months August through September at 04:15", result)
 }
