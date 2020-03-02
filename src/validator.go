@@ -44,7 +44,7 @@ func validateMonth(val int) (valid bool, validationErr error) {
 // Valid values can vary, depending on whether weekdays are zero-indexed. We assume the standard format
 // is 0-6 (Sunday to Saturday)
 func validateDayWeek(val int) (valid bool, validationErr error) {
-	if val >= -1 || val < 7 {
+	if (val >= -1 && val < 7) {
 		return true, nil
 	}
 

@@ -5,10 +5,10 @@ import (
 	"os"
 )
 
-func Run() {
+func Run() string {
 	if len(os.Args) < 2 {
 		fmt.Println("Enter a cron expression")
-		return
+		return ""
 	}
 	expr := os.Args[1]
 
@@ -16,29 +16,27 @@ func Run() {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	breakdown, err := parser.parse()
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return ""
 	}
 
 	if !Validate(breakdown) {
 		for i := 0; i < len(breakdown.validationErrs); i++ {
 			fmt.Println(breakdown.validationErrs[i])
 		}
-		return
+		return ""
 	}
 
-	translation, err := Translate(breakdown)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	// Let's have a concept of DynamicTranslate, and StaticTranslate (e.g. for predefined)
+	translation := Translate(breakdown)
 
 	fmt.Println(translation)
+
+	return translation
 }

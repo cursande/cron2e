@@ -7,42 +7,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateMinute(t *testing.T) {
-	assert := assert.New(t)
-
-	testCases := []struct {
-		val           int
-		expectedValid bool
-		expectedErr   error
-	}{
-		{59, true, nil},
-		{81, false, errors.New("The minute '81' is invalid")},
-		{-1, true, nil},
-	}
-
-	for _, tc := range testCases {
-		valid, err := validateMinute(tc.val)
-
-		assert.Equal(tc.expectedErr, err)
-		assert.Equal(tc.expectedValid, valid)
-	}
-}
-
 func TestValidateField(t *testing.T) {
 	assert := assert.New(t)
 
-	min := []CronValue{
+	testCases := []struct {
+		validator   func(int) (bool, error)
+		cvs         []CronValue
+		expectedErr error
+	}{
 		{
-			fieldVal:        5,
-			postSepFieldVal: 68,
-			sep:             '/',
+			validateMinute,
+			[]CronValue{
+				{
+					fieldVal:        5,
+					postSepFieldVal: 68,
+					sep:             '/',
+				},
+			},
+			errors.New("The minute '68' is invalid"),
+		},
+
+
+		{
+			validateDayWeek,
+			[]CronValue{
+				{
+					fieldVal:        2000,
+					postSepFieldVal: Unset,
+				},
+			},
+			errors.New("The weekday '2000' is invalid"),
 		},
 	}
 
-	valid, err := validateField(min, validateMinute)
+	for _, tc := range testCases {
+		valid, err := validateField(tc.cvs, tc.validator)
 
-	assert.Equal(false, valid)
-	assert.Equal(errors.New("The minute '68' is invalid"), err)
+		assert.Equal(false, valid)
+		assert.Equal(tc.expectedErr, err)
+	}
 }
 
 func TestValidate(t *testing.T) {
