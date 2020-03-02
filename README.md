@@ -1,7 +1,7 @@
 # Cron2e
 
 A small utility written in Go for interpreting cron expressions in plain
-english. It is still very early in development.
+english.
 
 Design goals:
 

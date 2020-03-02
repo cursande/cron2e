@@ -12,6 +12,7 @@ const (
 	DayMonth uint8 = 3
 	Month    uint8 = 4
 	DayWeek  uint8 = 5
+	Year     uint8 = 6
 )
 
 type CronValue struct {
@@ -26,6 +27,7 @@ type CronBreakdown struct {
 	dayMonths      []CronValue
 	months         []CronValue
 	dayWeeks       []CronValue
+	years          []CronValue
 	validationErrs []error
 }
 

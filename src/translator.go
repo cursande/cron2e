@@ -104,6 +104,8 @@ func isStep(sep rune) bool { return sep == '/' }
 
 func isRange(sep rune) bool { return sep == '-' }
 
+func isInstanceOf(sep rune) bool { return sep == '#' }
+
 // Standard use is for the first field value to be a wildcard. If not, it represents the start of the interval
 // through which the cron runs e.g. '2/2' for minutes means 'starting at 2, run the job every 2 minutes until the last minute (59)'
 // Also, having a wildcard as a post-separator field appears to be an invalid state.
@@ -129,6 +131,16 @@ func rangeToStr(cv CronValue, fieldType uint8) string {
 	through := valueToStr(cv.postSepFieldVal, alias)
 
 	return fmt.Sprintf("from %s %s through %s", typesToPluralStr[fieldType], from, through)
+}
+
+// Specific to days of the month in AWS, gross but not enough yet to justify creating a separate translator
+func instanceOfToStr(cv CronValue, fieldType uint8) string {
+	alias := determineTranslationAlias(fieldType)
+
+	weekday := valueToStr(cv.fieldVal, alias)
+	instance := ordinal(cv.postSepFieldVal)
+
+	return fmt.Sprintf("on the %s %s of the month", instance, weekday)
 }
 
 func valueToStr(val int, alias map[int]string) string {
@@ -161,6 +173,8 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 		} else if isRange(cv.sep) {
 			parts = append(parts, rangeToStr(cv, fieldType))
 
+		} else if isInstanceOf(cv.sep) {
+			parts = append(parts, instanceOfToStr(cv, fieldType))
 		} else {
 			if cv.fieldVal != Wildcard {
 				parts = append(parts, valueToStr(cv.fieldVal, determineTranslationAlias(fieldType)))
@@ -170,9 +184,9 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 
 	phrase := strings.Join(parts, " and ")
 
-	if noSeparatorsInField(cvs) && len(parts) > 1 {
+	if noSeparatorsInField(cvs) && len(parts) > 0 {
 		switch fieldType {
-		case Month:
+		case Month, Year:
 			return strings.Join([]string{"in", phrase}, " ")
 		case DayWeek:
 			return strings.Join([]string{"on", phrase}, " ")
@@ -223,13 +237,7 @@ func removeBlank(segments []string) (res []string) {
 	return res
 }
 
-// Translation is implemented as a decision-tree, which short circuits field translation on specific conditions e.g.
-// if all of month, day of the month and weekday are wildcard values, we can just add "every day" and
-// skip generating sentence segments for those fields.
-
-// This is very messy, and at some point this should be rewritten to be less brittle,
-// maybe using a time/date lib with proper formatting. For now it'll do
-func Translate(cb *CronBreakdown) (translation string, err error) {
+func Translate(cb *CronBreakdown) (translation string) {
 	segments := []string{}
 
 	if occursEveryDay(cb) {
@@ -247,6 +255,8 @@ func Translate(cb *CronBreakdown) (translation string, err error) {
 		segments = append(segments, FieldToStr(cb.minutes, Minute))
 	}
 
+	segments = append(segments, FieldToStr(cb.years, Year))
+
 	translation = strings.Join(removeBlank(segments), " ")
-	return fmt.Sprintf("Runs %s", translation), nil
+	return fmt.Sprintf("Runs %s", translation)
 }

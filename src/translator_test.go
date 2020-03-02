@@ -39,6 +39,11 @@ func TestFieldToStr(t *testing.T) {
 			Hour,
 			"every hour",
 		},
+		{
+			[]CronValue{{fieldVal: 2007}},
+			Year,
+			"in 2007",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -60,8 +65,7 @@ func TestTranslate(t *testing.T) {
 		dayWeeks:  []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
 	}
 
-	result, err := Translate(cb)
+	result := Translate(cb)
 
-	assert.Equal(nil, err)
 	assert.Equal("Runs from months August through September at 04:15", result)
 }

@@ -158,11 +158,22 @@ func (parser *StandardCronParser) parse() (cb *CronBreakdown, parseErr error) {
 		return nil, errors.New("not implemented!")
 	default:
 		cb.minutes, parseErr = tokenToField(tokens[0], Minute)
+		if parseErr != nil {
+			return nil, parseErr
+		}
 		cb.hours, parseErr = tokenToField(tokens[1], Hour)
+		if parseErr != nil {
+			return nil, parseErr
+		}
 		cb.dayMonths, parseErr = tokenToField(tokens[2], DayMonth)
+		if parseErr != nil {
+			return nil, parseErr
+		}
 		cb.months, parseErr = tokenToField(tokens[3], Month)
+		if parseErr != nil {
+			return nil, parseErr
+		}
 		cb.dayWeeks, parseErr = tokenToField(tokens[4], DayWeek)
-
 		if parseErr != nil {
 			return nil, parseErr
 		}
