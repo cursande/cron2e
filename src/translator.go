@@ -167,6 +167,10 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 	for i := 0; i < len(cvs); i++ {
 		cv := cvs[i]
 
+		if cv.fieldVal == Unset {
+			continue
+		}
+
 		if isStep(cv.sep) {
 			parts = append(parts, stepToStr(cv, fieldType))
 
