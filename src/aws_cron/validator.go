@@ -26,7 +26,7 @@ func validateHour(val int) (valid bool, validationErr error) {
 }
 
 func validateDayMonth(val int) (valid bool, validationErr error) {
-	if (val > 0 && val < 32) || val == -1 {
+	if (val > 0 && val < 32) || val == Wildcard || val == Unset {
 		return true, nil
 	}
 
@@ -44,7 +44,7 @@ func validateMonth(val int) (valid bool, validationErr error) {
 // Valid values can vary, depending on whether weekdays are zero-indexed. We assume the standard format
 // is 0-6 (Sunday to Saturday)
 func validateDayWeek(val int) (valid bool, validationErr error) {
-	if (val >= -1 && val < 7) {
+	if (val >= 1 && val <= 7) || val == Wildcard || val == Unset {
 		return true, nil
 	}
 
@@ -82,7 +82,7 @@ func validateCronValue(cv CronValue, validator func(int) (bool, error)) (valid b
 		return false, err
 	}
 
-	if cv.postSepFieldVal == Unset {
+	if cv.sep == 0 {
 		return true, nil
 	}
 
@@ -133,7 +133,7 @@ func (format *AWSCronFormat) Validate(cb *CronBreakdown) (validationErrs []error
 				valid, err := gv(cv)
 
 				if !valid {
-					cb.validationErrs = append(cb.validationErrs, err)
+					validationErrs = append(validationErrs, err)
 				}
 			}
 
@@ -143,9 +143,9 @@ func (format *AWSCronFormat) Validate(cb *CronBreakdown) (validationErrs []error
 		valid, err := validateField(v.field, v.validator)
 
 		if !valid {
-			cb.validationErrs = append(cb.validationErrs, err)
+			validationErrs = append(validationErrs, err)
 		}
 	}
 
-	return cb.validationErrs
+	return validationErrs
 }

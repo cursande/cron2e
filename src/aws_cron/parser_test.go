@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAWSStandardParser(t *testing.T) {
+func TestParse(t *testing.T) {
 	assert := assert.New(t)
 
 	testCases := []struct {
@@ -16,23 +16,23 @@ func TestAWSStandardParser(t *testing.T) {
 		{
 			"cron(0 18 ? * MON-FRI *)",
 			&CronBreakdown{
-				minutes:   []CronValue{{fieldVal: 0, postSepFieldVal: Unset}},
-				hours:     []CronValue{{fieldVal: 18, postSepFieldVal: Unset}},
-				dayMonths: []CronValue{{fieldVal: Unset, postSepFieldVal: Unset}},
-				months:    []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
-				dayWeeks:  []CronValue{{fieldVal: 1, postSepFieldVal: 5, sep: '-'}},
-				years:     []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
+				minutes:   []CronValue{{fieldVal: 0}},
+				hours:     []CronValue{{fieldVal: 18}},
+				dayMonths: []CronValue{{fieldVal: Unset}},
+				months:    []CronValue{{fieldVal: Wildcard}},
+				dayWeeks:  []CronValue{{fieldVal: 2, postSepFieldVal: 6, sep: '-'}},
+				years:     []CronValue{{fieldVal: Wildcard}},
 			},
 		},
 		{
 			"cron(0 9 2#1 * ? 2007)",
 			&CronBreakdown{
-				minutes:   []CronValue{{fieldVal: 0, postSepFieldVal: Unset}},
-				hours:     []CronValue{{fieldVal: 9, postSepFieldVal: Unset}},
+				minutes:   []CronValue{{fieldVal: 0}},
+				hours:     []CronValue{{fieldVal: 9}},
 				dayMonths: []CronValue{{fieldVal: 2, postSepFieldVal: 1, sep: '#'}},
-				months:    []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
-				dayWeeks:  []CronValue{{fieldVal: Unset, postSepFieldVal: Unset}},
-				years:     []CronValue{{fieldVal: 2007, postSepFieldVal: Unset}},
+				months:    []CronValue{{fieldVal: Wildcard}},
+				dayWeeks:  []CronValue{{fieldVal: Unset}},
+				years:     []CronValue{{fieldVal: 2007}},
 			},
 		},
 	}
@@ -42,7 +42,7 @@ func TestAWSStandardParser(t *testing.T) {
 
 		breakdown := tc.expected
 
-		assert.Equal(nil, err)
+		assert.Equal(0, len(err))
 		assert.Equal(
 			breakdown,
 			result,

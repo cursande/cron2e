@@ -31,7 +31,6 @@ type CronBreakdown struct {
 	months         []CronValue
 	dayWeeks       []CronValue
 	years          []CronValue
-	validationErrs []error
 }
 
 var format = AWSCronFormat{}

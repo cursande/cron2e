@@ -16,7 +16,7 @@ func TestParse(t *testing.T) {
 		interval:  5,
 	}
 
-	assert.Equal(nil, err)
+	assert.Equal(0, len(err))
 
 	assert.Equal(
 		breakdown,

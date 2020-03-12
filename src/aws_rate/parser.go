@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func (format *AWSRateFormat) Parse(expr string) (cb *CronBreakdown, parseErr error) {
+func (format *AWSRateFormat) Parse(expr string) (cb *CronBreakdown, parseErrs []error) {
 	match := regexp.MustCompile(`rate\((\d+) (\w+)\)`).FindAllStringSubmatch(expr, 2)
 
 	num, interval := match[0][1], match[0][2]
@@ -15,7 +15,8 @@ func (format *AWSRateFormat) Parse(expr string) (cb *CronBreakdown, parseErr err
 	val, err := strconv.Atoi(num)
 
 	if err != nil {
-		return nil, err
+		parseErrs = append(parseErrs, err)
+		return cb, parseErrs
 	}
 
 	switch interval {
@@ -27,6 +28,7 @@ func (format *AWSRateFormat) Parse(expr string) (cb *CronBreakdown, parseErr err
 		return &CronBreakdown{timeValue: Day, interval: val}, nil
 
 	default:
-		return nil, errors.New(fmt.Sprintf("Cannot parse AWS rate: '%s'", interval))
+		parseErrs = append(parseErrs, errors.New(fmt.Sprintf("Cannot parse AWS rate: '%s'", interval)))
+		return nil, parseErrs
 	}
 }

@@ -32,6 +32,12 @@ func breakdownToStr(timeValue uint8, interval int) string {
 	}
 }
 
-func (format *AWSRateFormat) Translate(cb *CronBreakdown) (translation string) {
-	return fmt.Sprintf("Runs every %s", breakdownToStr(cb.timeValue, cb.interval))
+func (format *AWSRateFormat) Translate(expr string) (translation string, errs []error) {
+	breakdown, errs := format.Parse(expr)
+
+	if len(errs) > 0 {
+		return translation, errs
+	}
+
+	return fmt.Sprintf("Runs every %s", breakdownToStr(breakdown.timeValue, breakdown.interval)), errs
 }

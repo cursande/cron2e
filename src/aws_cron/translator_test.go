@@ -57,15 +57,8 @@ func TestFieldToStr(t *testing.T) {
 func TestTranslate(t *testing.T) {
 	assert := assert.New(t)
 
-	cb := &CronBreakdown{
-		minutes:   []CronValue{{fieldVal: 15, postSepFieldVal: Unset}},
-		hours:     []CronValue{{fieldVal: 4, postSepFieldVal: Unset}},
-		dayMonths: []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
-		months:    []CronValue{{fieldVal: 8, postSepFieldVal: 9, sep: '-'}},
-		dayWeeks:  []CronValue{{fieldVal: Wildcard, postSepFieldVal: Unset}},
-	}
+	result, errs := format.Translate("cron(15 4 ? 8-9 * *)")
 
-	result := format.Translate(cb)
-
+	assert.Equal(0, len(errs))
 	assert.Equal("Runs from months August through September at 04:15", result)
 }

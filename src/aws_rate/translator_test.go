@@ -9,12 +9,8 @@ import (
 func TestTranslate(t *testing.T) {
 	assert := assert.New(t)
 
-	cb := &CronBreakdown{
-		timeValue: Hour,
-		interval:  8,
-	}
+	result, errs := format.Translate("rate(8 hours)")
 
-	result := format.Translate(cb)
-
+	assert.Equal(0, len(errs))
 	assert.Equal("Runs every 8 hours", result)
 }

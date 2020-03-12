@@ -10,7 +10,6 @@ import (
 
 const requiredFields int = 6
 
-// [SUN-SAT] = 1-7 in AWS, so we need to adjust it for our breakdown where [SUN-SAT] = 0-6
 var DayWeekAliases = map[string]int{
 	"SUN": 1,
 	"MON": 2,
@@ -60,40 +59,18 @@ func DetermineAlias(fieldType uint8) (alias map[string]int) {
 
 func CoerceVal(val string, alias map[string]int, fieldType uint8) (newVal int, err error) {
 	if len(alias) != 0 {
-		r := regexp.MustCompile(`[a-z|A-Z]`)
-
-		if r.MatchString(val) {
+		if regexp.MustCompile(`[a-z|A-Z]`).MatchString(val) {
 			newVal, found := alias[strings.ToUpper(val)]
 
 			if !found {
-				return 0, errors.New(fmt.Sprintf("value not recognised: '%s'", val))
+				return newVal, errors.New(fmt.Sprintf("value not recognised: '%s'", val))
 			}
 
-			if fieldType == DayWeek {
-				return newVal - 1, nil
-			} else {
-				return newVal, nil
-			}
-		} else {
-			newVal, err = StringValToInt(val)
+			return newVal, nil
 		}
-	} else {
-		newVal, err = StringValToInt(val)
 	}
 
-	if err != nil {
-		return 0, err
-	}
-
-	if newVal == Unset {
-		return newVal, nil
-	}
-
-	if fieldType == DayWeek {
-		return newVal - 1, nil
-	} else {
-		return newVal, nil
-	}
+	return StringValToInt(val)
 }
 
 func BuildValueFromPair(pair []string, alias map[string]int, sep rune, fieldType uint8) (cv CronValue, err error) {
@@ -186,7 +163,6 @@ func TokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 			}
 
 			cv.fieldVal = coerced
-			cv.postSepFieldVal = Unset
 
 			cvs = append(cvs, cv)
 		}
@@ -207,43 +183,47 @@ func MultipleOrZeroQuestionMarks(expr string) bool {
 	return (occ >= 2 || occ == 0)
 }
 
-func (format *AWSCronFormat) Parse(expr string) (cb *CronBreakdown, parseErr error) {
+func (format *AWSCronFormat) Parse(expr string) (cb *CronBreakdown, parseErrs []error) {
 	cb = &CronBreakdown{}
 
 	if MultipleOrZeroQuestionMarks(expr) {
-		return nil, errors.New("'?' should only be used to mark day-of-week or day-of-month as unused for AWS Cron")
+		parseErrs = append(parseErrs, errors.New("'?' should only be used to mark day-of-week or day-of-month as unused for AWS Cron"))
+		return nil, parseErrs
 	}
 
 	tokens := strings.Split(expr[5:len(expr) - 1], " ")
 
 	if len(tokens) < requiredFields {
-		return nil, errors.New("Invalid AWS cron expression, not enough values provided")
+		parseErrs = append(parseErrs, errors.New("Invalid AWS cron expression, not enough values provided"))
+		return nil, parseErrs
 	}
+
+	var parseErr error
 
 	cb.minutes, parseErr = TokenToField(tokens[0], Minute)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 	cb.hours, parseErr = TokenToField(tokens[1], Hour)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 	cb.dayMonths, parseErr = TokenToField(tokens[2], DayMonth)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 	cb.months, parseErr = TokenToField(tokens[3], Month)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 	cb.dayWeeks, parseErr = TokenToField(tokens[4], DayWeek)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 	cb.years, parseErr = TokenToField(tokens[5], Year)
 	if parseErr != nil {
-		return nil, parseErr
+		parseErrs = append(parseErrs, parseErr)
 	}
 
-	return cb, nil
+	return cb, parseErrs
 }

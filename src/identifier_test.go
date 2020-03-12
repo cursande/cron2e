@@ -4,6 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	awscron "github.com/cursande/cron2e/src/aws_cron"
+	awsrate "github.com/cursande/cron2e/src/aws_rate"
+	standard "github.com/cursande/cron2e/src/standard"
 )
 
 func TestFindParserForStandardExpression(t *testing.T) {
@@ -22,14 +26,14 @@ func TestFindParserForStandardExpression(t *testing.T) {
 	}
 
 	for _, expr := range standardTestCases {
-		parser, err := ParserForExpression(expr)
+		format, err := FormatForExpression(expr)
 
 		assert.Equal( nil, err)
 
 		assert.Equal(
-			&StandardCronParser{expr: expr},
-			parser,
-			"it returns the correct parser for a standard cron expression",
+			&standard.StandardFormat{},
+			format,
+			"it returns the correct format for a standard cron expression",
 		)
 	}
 }
@@ -37,22 +41,22 @@ func TestFindParserForStandardExpression(t *testing.T) {
 func TestFindParserForAWSCronExpression(t *testing.T) {
 	assert := assert.New(t)
 
-	awsCronTestCases := []string{
+	testCases := []string{
 		"cron(15 10 * * ? *)",
 		"cron(0 8 1 * ? *)",
 		"cron(0 18 ? * MON-FRI *)",
 		"cron(0 9 ? * 2#1 *)",
 	}
 
-	for _, expr := range awsCronTestCases {
-		parser, err := ParserForExpression(expr)
+	for _, expr := range testCases {
+		format, err := FormatForExpression(expr)
 
 		assert.Equal(nil, err)
 
 		assert.Equal(
-			&AWSStandardParser{expr: expr},
-			parser,
-			"it returns the correct parser for an AWS cron expression",
+			&awscron.AWSCronFormat{},
+			format,
+			"it returns the correct format for an AWS cron expression",
 		)
 	}
 }
@@ -60,21 +64,21 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 func TestFindParserForAWSRateExpression(t *testing.T) {
 	assert := assert.New(t)
 
-	awsRateTestCases := []string{
+	testCases := []string{
 		"rate(5 minutes)",
 		"rate(1 hour)",
 		"rate(7 days)",
 	}
 
-	for _, expr := range awsRateTestCases {
-		parser, err := ParserForExpression(expr)
+	for _, expr := range testCases {
+		format, err := FormatForExpression(expr)
 
 		assert.Equal(nil, err)
 
 		assert.Equal(
-			&AWSRateParser{expr: expr},
-			parser,
-			"it returns the correct parser for an AWS cron expression",
+			&awsrate.AWSRateFormat{},
+			format,
+			"it returns the correct format for an AWS cron expression",
 		)
 	}
 }

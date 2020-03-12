@@ -212,10 +212,6 @@ func canFormatTimeOfDay(minutes []CronValue, hours []CronValue) bool {
 		return false
 	}
 
-	if minute.postSepFieldVal != Unset || hour.postSepFieldVal != Unset {
-		return false
-	}
-
 	if minute.fieldVal == Wildcard || hour.fieldVal == Wildcard {
 		return false
 	}
@@ -241,7 +237,7 @@ func removeBlank(segments []string) (res []string) {
 	return res
 }
 
-func (format *AWSCronFormat) Translate(cb *CronBreakdown) (translation string) {
+func generateExpression(cb *CronBreakdown) string {
 	segments := []string{}
 
 	if occursEveryDay(cb) {
@@ -261,6 +257,23 @@ func (format *AWSCronFormat) Translate(cb *CronBreakdown) (translation string) {
 
 	segments = append(segments, FieldToStr(cb.years, Year))
 
-	translation = strings.Join(removeBlank(segments), " ")
+	translation := strings.Join(removeBlank(segments), " ")
+
 	return fmt.Sprintf("Runs %s", translation)
+}
+
+func (format *AWSCronFormat) Translate(expr string) (translation string, errs []error) {
+	breakdown, errs := format.Parse(expr)
+
+	if len(errs) > 0 {
+		return translation, errs
+	}
+
+	errs = format.Validate(breakdown)
+
+	if len(errs) > 0 {
+		return translation, errs
+	}
+
+	return generateExpression(breakdown), nil
 }

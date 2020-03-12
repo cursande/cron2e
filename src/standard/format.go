@@ -28,7 +28,6 @@ type CronBreakdown struct {
 	dayMonths      []CronValue
 	months         []CronValue
 	dayWeeks       []CronValue
-	validationErrs []error
 }
 
 // For testing

@@ -16,17 +16,12 @@ var exprToTrans = map[string]string{
 	"@reboot":   "Runs after cron daemon reboots",
 }
 
-// There is no dynamic information that needs to be parsed for a predefined cron.
-func (format *PredefinedFormat) Parse(expr string) (bd string, parseErrs []error) {
+func (format *PredefinedFormat) Translate(expr string) (translation string, errs []error) {
 	bd, found := exprToTrans[expr]
 
 	if !found {
-		parseErrs = append(parseErrs, errors.New("Unknown cron expression"))
+		errs = append(errs, errors.New("Unknown cron expression"))
 	}
 
-	return bd, parseErrs
+	return bd, errs
 }
-
-func (format *PredefinedFormat) Validate(breakdown string) (validationErrs []error) { return }
-
-func (format *PredefinedFormat) Translate(breakdown string) (translation string) { return breakdown }

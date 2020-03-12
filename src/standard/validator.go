@@ -133,7 +133,7 @@ func (format *StandardFormat) Validate(cb *CronBreakdown) (validationErrs []erro
 				valid, err := gv(cv)
 
 				if !valid {
-					cb.validationErrs = append(cb.validationErrs, err)
+					validationErrs = append(validationErrs, err)
 				}
 			}
 
@@ -143,9 +143,9 @@ func (format *StandardFormat) Validate(cb *CronBreakdown) (validationErrs []erro
 		valid, err := validateField(v.field, v.validator)
 
 		if !valid {
-			cb.validationErrs = append(cb.validationErrs, err)
+			validationErrs = append(validationErrs, err)
 		}
 	}
 
-	return cb.validationErrs
+	return validationErrs
 }
