@@ -17,6 +17,6 @@ expressions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/Schedule
 
 ``` shell
 > cron2e "5 0 * 3-8 *"
-Runs from months March through August at 00:05
+Runs every day from months March through August at 00:05
 ```
 

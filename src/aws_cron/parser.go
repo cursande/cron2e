@@ -1,11 +1,9 @@
 package awscron
 
 import (
-	"fmt"
 	"errors"
 	"strings"
 	"strconv"
-	"regexp"
 )
 
 const requiredFields int = 6
@@ -36,7 +34,7 @@ var MonthAliases = map[string]int{
 }
 
 // TODO: Will need to support `L` and `W`
-func StringValToInt(val string) (newVal int, err error) {
+func stringValToInt(val string) (newVal int, err error) {
 	if val == "*" {
 		return Wildcard, nil
 	} else if val == "?" {
@@ -57,33 +55,29 @@ func DetermineAlias(fieldType uint8) (alias map[string]int) {
 	}
 }
 
-func CoerceVal(val string, alias map[string]int, fieldType uint8) (newVal int, err error) {
+func CoerceVal(val string, alias map[string]int) (newVal int, err error) {
 	if len(alias) != 0 {
-		if regexp.MustCompile(`[a-z|A-Z]`).MatchString(val) {
-			newVal, found := alias[strings.ToUpper(val)]
+		newVal, found := alias[strings.ToUpper(val)]
 
-			if !found {
-				return newVal, errors.New(fmt.Sprintf("value not recognised: '%s'", val))
-			}
-
+		if found {
 			return newVal, nil
 		}
 	}
 
-	return StringValToInt(val)
+	return stringValToInt(val)
 }
 
-func BuildValueFromPair(pair []string, alias map[string]int, sep rune, fieldType uint8) (cv CronValue, err error) {
+func BuildValueFromPair(pair []string, alias map[string]int, sep rune) (cv CronValue, err error) {
 	cv = CronValue{}
 	cv.sep = sep
 
-	coerced, err := CoerceVal(pair[0], alias, fieldType)
+	coerced, err := CoerceVal(pair[0], alias)
 	if err != nil {
 		return cv, err
 	}
 	cv.fieldVal = coerced
 
-	coerced, err = CoerceVal(pair[1], alias, fieldType)
+	coerced, err = CoerceVal(pair[1], alias)
 	if err != nil {
 		return cv, err
 	}
@@ -101,7 +95,7 @@ func BuildInstanceOfValueFromPair(pair []string, alias map[string]int, sep rune,
 	cv = CronValue{}
 	cv.sep = sep
 
-	coerced, err := CoerceVal(pair[0], alias, fieldType)
+	coerced, err := CoerceVal(pair[0], alias)
 	if err != nil {
 		return cv, err
 	}
@@ -126,7 +120,7 @@ func TokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 		if strings.ContainsRune(field, '-') {
 			pair := strings.Split(field, "-")
 
-			cv, err := BuildValueFromPair(pair, alias, '-', fieldType)
+			cv, err := BuildValueFromPair(pair, alias, '-')
 
 			if err != nil {
 				return nil, err
@@ -136,7 +130,7 @@ func TokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 		} else if strings.ContainsRune(field, '/') {
 			pair := strings.Split(field, "/")
 
-			cv, err := BuildValueFromPair(pair, alias, '/', fieldType)
+			cv, err := BuildValueFromPair(pair, alias, '/')
 
 			if err != nil {
 				return nil, err
@@ -156,7 +150,7 @@ func TokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 		} else {
 			cv := CronValue{}
 
-			coerced, err := CoerceVal(field, alias, fieldType)
+			coerced, err := CoerceVal(field, alias)
 
 			if err != nil {
 				return nil, err

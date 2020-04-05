@@ -55,5 +55,5 @@ func TestTranslate(t *testing.T) {
 	result, errs := format.Translate("15 4 * 8-9 *")
 
 	assert.Equal(0, len(errs))
-	assert.Equal("Runs from months August through September at 04:15", result)
+	assert.Equal("Runs every day from months August through September at 04:15", result)
 }

@@ -57,8 +57,24 @@ func TestFieldToStr(t *testing.T) {
 func TestTranslate(t *testing.T) {
 	assert := assert.New(t)
 
-	result, errs := format.Translate("cron(15 4 ? 8-9 * *)")
+	testCases := []struct {
+		expr        string
+		expectedRes string
+	}{
+		{
+			"cron(15 4 ? 8-9 * *)",
+			"Runs every day from months August through September at 04:15",
+		},
+		{
+			"cron(0 18 ? * MON-FRI *)",
+			"Runs from weekdays Monday through Friday at 18:00",
+		},
+	}
 
-	assert.Equal(0, len(errs))
-	assert.Equal("Runs from months August through September at 04:15", result)
+	for _, tc := range testCases {
+		result, errs := format.Translate(tc.expr)
+
+		assert.Equal(0, len(errs))
+		assert.Equal(tc.expectedRes, result)
+	}
 }

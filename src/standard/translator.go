@@ -95,9 +95,7 @@ func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 }
 
 func occursEveryDay(cb *CronBreakdown) bool {
-	return (fieldContainsOnlyWildcard(cb.months) &&
-		fieldContainsOnlyWildcard(cb.dayMonths) &&
-		fieldContainsOnlyWildcard(cb.dayWeeks))
+	return (fieldContainsOnlyWildcard(cb.dayMonths) && fieldContainsOnlyWildcard(cb.dayWeeks))
 }
 
 func isStep(sep rune) bool { return sep == '/' }
@@ -247,10 +245,11 @@ func generateExpression(cb *CronBreakdown) string {
 	if occursEveryDay(cb) {
 		segments = append(segments, "every day")
 	} else {
-		segments = append(segments, FieldToStr(cb.months, Month))
 		segments = append(segments, FieldToStr(cb.dayMonths, DayMonth))
 		segments = append(segments, FieldToStr(cb.dayWeeks, DayWeek))
 	}
+
+	segments = append(segments, FieldToStr(cb.months, Month))
 
 	if canFormatTimeOfDay(cb.minutes, cb.hours) {
 		segments = append(segments, combineMinuteAndHour(cb.minutes, cb.hours))

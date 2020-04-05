@@ -2,7 +2,6 @@ package standard
 
 import (
 	"errors"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -47,22 +46,14 @@ func stringValToInt(val string) (newVal int, err error) {
 // Coerces an int from string to its appropriate form, using an alias if appropriate e.g. "JUL", "SAT"
 func coerceVal(val string, alias map[string]int) (newVal int, err error) {
 	if len(alias) != 0 {
-		r := regexp.MustCompile(`[a-z|A-Z]`)
+		newVal, found := alias[strings.ToUpper(val)]
 
-		if r.MatchString(val) {
-			newVal, found := alias[strings.ToUpper(val)]
-
-			if found {
-				return newVal, nil
-			}
-		} else {
-			return stringValToInt(val)
+		if found {
+			return newVal, nil
 		}
-	} else {
-		return stringValToInt(val)
 	}
 
-	return
+	return stringValToInt(val)
 }
 
 func determineStandardAlias(fieldType uint8) (alias map[string]int) {

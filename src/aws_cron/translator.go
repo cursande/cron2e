@@ -7,13 +7,13 @@ import (
 )
 
 var intToDayWeekName = map[int]string{
-	0: "Sunday",
-	1: "Monday",
-	2: "Tuesday",
-	3: "Wednesday",
-	4: "Thursday",
-	5: "Friday",
-	6: "Saturday",
+	1: "Sunday",
+	2: "Monday",
+	3: "Tuesday",
+	4: "Wednesday",
+	5: "Thursday",
+	6: "Friday",
+	7: "Saturday",
 }
 
 var intToMonthName = map[int]string{
@@ -86,7 +86,7 @@ func determineTranslationAlias(fieldType uint8) (alias map[int]string) {
 
 func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 	for i := 0; i < len(cvs); i++ {
-		if (cvs[i] == CronValue{fieldVal: Wildcard, postSepFieldVal: Unset}) {
+		if (cvs[i].fieldVal == Wildcard && cvs[i].postSepFieldVal == 0) {
 			return true
 		}
 	}
@@ -95,9 +95,7 @@ func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 }
 
 func occursEveryDay(cb *CronBreakdown) bool {
-	return (fieldContainsOnlyWildcard(cb.months) &&
-		fieldContainsOnlyWildcard(cb.dayMonths) &&
-		fieldContainsOnlyWildcard(cb.dayWeeks))
+	return (fieldContainsOnlyWildcard(cb.dayMonths) || fieldContainsOnlyWildcard(cb.dayWeeks))
 }
 
 func isStep(sep rune) bool { return sep == '/' }
@@ -243,10 +241,11 @@ func generateExpression(cb *CronBreakdown) string {
 	if occursEveryDay(cb) {
 		segments = append(segments, "every day")
 	} else {
-		segments = append(segments, FieldToStr(cb.months, Month))
 		segments = append(segments, FieldToStr(cb.dayMonths, DayMonth))
 		segments = append(segments, FieldToStr(cb.dayWeeks, DayWeek))
 	}
+
+	segments = append(segments, FieldToStr(cb.months, Month))
 
 	if canFormatTimeOfDay(cb.minutes, cb.hours) {
 		segments = append(segments, combineMinuteAndHour(cb.minutes, cb.hours))
