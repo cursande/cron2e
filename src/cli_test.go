@@ -1,8 +1,8 @@
 package cron2e
 
 import (
-	"testing"
 	"os"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -26,9 +26,9 @@ func TestRun(t *testing.T) {
 
 		res := Run()
 
-			assert.Equal(
-				tc.expectedRes,
-				res,
-			)
+		assert.Equal(
+			tc.expectedRes,
+			res,
+		)
 	}
 }
