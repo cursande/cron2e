@@ -48,25 +48,21 @@ var typesToPluralStr = map[uint8]string{
 }
 
 func ordinal(val int) string {
-	if val == 1 {
-		return ""
-	}
-
 	valToS := strconv.Itoa(val)
 
 	ones := val % 10
 	tens := val % 100
 
-	suffix := "th "
+	suffix := "th"
 
 	if tens < 11 || tens > 13 {
 		switch ones {
 		case 1:
-			suffix = "st "
+			suffix = "st"
 		case 2:
-			suffix = "nd "
+			suffix = "nd"
 		case 3:
-			suffix = "rd "
+			suffix = "rd"
 		}
 	}
 
@@ -108,45 +104,42 @@ func isInstanceOf(sep rune) bool { return sep == '#' }
 // through which the cron runs e.g. '2/2' for minutes means 'starting at 2, run the job every 2 minutes until the last minute (59)'
 // Also, having a wildcard as a post-separator field appears to be an invalid state.
 func stepToStr(cv CronValue, fieldType uint8) string {
-	alias := determineTranslationAlias(fieldType)
-	interval := ordinal(cv.postSepFieldVal)
 
 	if cv.fieldVal == Wildcard {
-		return fmt.Sprintf("every %s%s", interval, typesToSingularStr[fieldType])
+		// It's more natural for instance to say "every hour" than "every 1st hour".
+		if cv.postSepFieldVal == 1 {
+			return fmt.Sprintf("every %s", typesToSingularStr[fieldType])
+		} else {
+			return fmt.Sprintf("every %s %s", ordinal(cv.postSepFieldVal), typesToSingularStr[fieldType])
+		}
 	} else {
-		startRange := valueToStr(cv.fieldVal, alias)
+		startRange := valueToStr(cv.fieldVal, fieldType)
 
-		return fmt.Sprintf("every %s%s, starting from %s", interval, typesToSingularStr[fieldType], startRange)
+		return fmt.Sprintf("every %s%s, starting from %s", ordinal(cv.postSepFieldVal), typesToSingularStr[fieldType], startRange)
 	}
 
-	return fmt.Sprintf("every %s%s", interval, typesToPluralStr[fieldType])
+	return fmt.Sprintf("every %s%s", ordinal(cv.postSepFieldVal), typesToPluralStr[fieldType])
 }
 
 func rangeToStr(cv CronValue, fieldType uint8) string {
-	alias := determineTranslationAlias(fieldType)
-
-	from := valueToStr(cv.fieldVal, alias)
-	through := valueToStr(cv.postSepFieldVal, alias)
+	from := valueToStr(cv.fieldVal, fieldType)
+	through := valueToStr(cv.postSepFieldVal, fieldType)
 
 	return fmt.Sprintf("from %s %s through %s", typesToPluralStr[fieldType], from, through)
 }
 
-// Specific to days of the month in AWS, gross but not enough yet to justify creating a separate translator
-func instanceOfToStr(cv CronValue, fieldType uint8) string {
+func valueToStr(val int, fieldType uint8) string {
 	alias := determineTranslationAlias(fieldType)
 
-	weekday := valueToStr(cv.fieldVal, alias)
-	instance := ordinal(cv.postSepFieldVal)
-
-	return fmt.Sprintf("on the %s %s of the month", instance, weekday)
-}
-
-func valueToStr(val int, alias map[int]string) string {
 	if len(alias) != 0 {
 		return alias[val]
 	}
 
-	return strconv.Itoa(val)
+	if fieldType == DayMonth {
+		return ordinal(val)
+	} else {
+		return strconv.Itoa(val)
+	}
 }
 
 func noSeparatorsInField(cvs []CronValue) bool {
@@ -175,11 +168,9 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 		} else if isRange(cv.sep) {
 			parts = append(parts, rangeToStr(cv, fieldType))
 
-		} else if isInstanceOf(cv.sep) {
-			parts = append(parts, instanceOfToStr(cv, fieldType))
 		} else {
 			if cv.fieldVal != Wildcard {
-				parts = append(parts, valueToStr(cv.fieldVal, determineTranslationAlias(fieldType)))
+				parts = append(parts, valueToStr(cv.fieldVal, fieldType))
 			}
 		}
 	}
@@ -190,8 +181,14 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 		switch fieldType {
 		case Month:
 			return strings.Join([]string{"in", phrase}, " ")
+		case DayMonth:
+			return strings.Join([]string{"on the ", phrase, " day of the month"}, "")
 		case DayWeek:
 			return strings.Join([]string{"on", phrase}, " ")
+		case Hour:
+			return strings.Join([]string{"at hour", phrase}, " ")
+		case Minute:
+			return strings.Join([]string{"at minute", phrase}, " ")
 		}
 	}
 
@@ -257,6 +254,7 @@ func generateExpression(cb *CronBreakdown) string {
 		segments = append(segments, FieldToStr(cb.hours, Hour))
 		segments = append(segments, FieldToStr(cb.minutes, Minute))
 	}
+
 
 	translation := strings.Join(removeBlank(segments), " ")
 	return fmt.Sprintf("Runs %s", translation)

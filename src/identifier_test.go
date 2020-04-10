@@ -18,7 +18,6 @@ func TestFindParserForStandardExpression(t *testing.T) {
 		"5 0 * 8 *",
 		"15 14 1 * *",
 		"0 22 * * 1-5",
-		"23 0-20/2 * * *",
 		"5 4 * * sun",
 		"0 0,12 1 */2 *",
 		"5 0 * feb-jun *",

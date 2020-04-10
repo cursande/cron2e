@@ -69,6 +69,10 @@ func TestTranslate(t *testing.T) {
 			"cron(0 18 ? * MON-FRI *)",
 			"Runs from weekdays Monday through Friday at 18:00",
 		},
+		{
+			"cron(29 5 1 * ? *)",
+			"Runs on the 1st day of the month at 05:29",
+		},
 	}
 
 	for _, tc := range testCases {

@@ -48,25 +48,21 @@ var typesToPluralStr = map[uint8]string{
 }
 
 func ordinal(val int) string {
-	if val == 1 {
-		return ""
-	}
-
 	valToS := strconv.Itoa(val)
 
 	ones := val % 10
 	tens := val % 100
 
-	suffix := "th "
+	suffix := "th"
 
 	if tens < 11 || tens > 13 {
 		switch ones {
 		case 1:
-			suffix = "st "
+			suffix = "st"
 		case 2:
-			suffix = "nd "
+			suffix = "nd"
 		case 3:
-			suffix = "rd "
+			suffix = "rd"
 		}
 	}
 
@@ -86,7 +82,7 @@ func determineTranslationAlias(fieldType uint8) (alias map[int]string) {
 
 func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 	for i := 0; i < len(cvs); i++ {
-		if (cvs[i].fieldVal == Wildcard && cvs[i].postSepFieldVal == 0) {
+		if cvs[i].fieldVal == Wildcard && cvs[i].postSepFieldVal == 0 {
 			return true
 		}
 	}
@@ -104,17 +100,17 @@ func isRange(sep rune) bool { return sep == '-' }
 
 func isInstanceOf(sep rune) bool { return sep == '#' }
 
-// Standard use is for the first field value to be a wildcard. If not, it represents the start of the interval
-// through which the cron runs e.g. '2/2' for minutes means 'starting at 2, run the job every 2 minutes until the last minute (59)'
-// Also, having a wildcard as a post-separator field appears to be an invalid state.
 func stepToStr(cv CronValue, fieldType uint8) string {
-	alias := determineTranslationAlias(fieldType)
 	interval := ordinal(cv.postSepFieldVal)
 
 	if cv.fieldVal == Wildcard {
-		return fmt.Sprintf("every %s%s", interval, typesToSingularStr[fieldType])
+		if cv.postSepFieldVal == 1 {
+			return fmt.Sprintf("every %s", typesToSingularStr[fieldType])
+		} else {
+			return fmt.Sprintf("every %s %s", ordinal(cv.postSepFieldVal), typesToSingularStr[fieldType])
+		}
 	} else {
-		startRange := valueToStr(cv.fieldVal, alias)
+		startRange := valueToStr(cv.fieldVal, fieldType)
 
 		return fmt.Sprintf("every %s%s, starting from %s", interval, typesToSingularStr[fieldType], startRange)
 	}
@@ -123,30 +119,32 @@ func stepToStr(cv CronValue, fieldType uint8) string {
 }
 
 func rangeToStr(cv CronValue, fieldType uint8) string {
-	alias := determineTranslationAlias(fieldType)
-
-	from := valueToStr(cv.fieldVal, alias)
-	through := valueToStr(cv.postSepFieldVal, alias)
+	from := valueToStr(cv.fieldVal, fieldType)
+	through := valueToStr(cv.postSepFieldVal, fieldType)
 
 	return fmt.Sprintf("from %s %s through %s", typesToPluralStr[fieldType], from, through)
 }
 
-// Specific to days of the month in AWS, gross but not enough yet to justify creating a separate translator
+// Specific to days of the week in AWS
 func instanceOfToStr(cv CronValue, fieldType uint8) string {
-	alias := determineTranslationAlias(fieldType)
-
-	weekday := valueToStr(cv.fieldVal, alias)
+	weekday := valueToStr(cv.fieldVal, fieldType)
 	instance := ordinal(cv.postSepFieldVal)
 
 	return fmt.Sprintf("on the %s %s of the month", instance, weekday)
 }
 
-func valueToStr(val int, alias map[int]string) string {
+func valueToStr(val int, fieldType uint8) string {
+	alias := determineTranslationAlias(fieldType)
+
 	if len(alias) != 0 {
 		return alias[val]
 	}
 
-	return strconv.Itoa(val)
+	if fieldType == DayMonth {
+		return ordinal(val)
+	} else {
+		return strconv.Itoa(val)
+	}
 }
 
 func noSeparatorsInField(cvs []CronValue) bool {
@@ -179,7 +177,7 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 			parts = append(parts, instanceOfToStr(cv, fieldType))
 		} else {
 			if cv.fieldVal != Wildcard {
-				parts = append(parts, valueToStr(cv.fieldVal, determineTranslationAlias(fieldType)))
+				parts = append(parts, valueToStr(cv.fieldVal, fieldType))
 			}
 		}
 	}
@@ -190,8 +188,14 @@ func FieldToStr(cvs []CronValue, fieldType uint8) string {
 		switch fieldType {
 		case Month, Year:
 			return strings.Join([]string{"in", phrase}, " ")
+		case DayMonth:
+			return strings.Join([]string{"on the ", phrase, " day of the month"}, "")
 		case DayWeek:
 			return strings.Join([]string{"on", phrase}, " ")
+		case Hour:
+			return strings.Join([]string{"at hour", phrase}, " ")
+		case Minute:
+			return strings.Join([]string{"at minute", phrase}, " ")
 		}
 	}
 

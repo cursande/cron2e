@@ -52,8 +52,32 @@ func TestFieldToStr(t *testing.T) {
 func TestTranslate(t *testing.T) {
 	assert := assert.New(t)
 
-	result, errs := format.Translate("15 4 * 8-9 *")
+	testCases := []struct {
+		expr        string
+		expectedRes string
+	}{
+		{
+			"15 4 * 8-9 *",
+			"Runs every day from months August through September at 04:15",
+		},
+		{
+			"15 14 1 * *",
+			"Runs on the 1st day of the month at 14:15",
+		},
+		{
+			"15 14 1,4 * *",
+			"Runs on the 1st and 4th day of the month at 14:15",
+		},
+		{
+			"0 */4 * * *",
+			"Runs every day every 4th hour at minute 0",
+		},
+	}
 
-	assert.Equal(0, len(errs))
-	assert.Equal("Runs every day from months August through September at 04:15", result)
+	for _, tc := range testCases {
+		result, errs := format.Translate(tc.expr)
+
+		assert.Equal(0, len(errs))
+		assert.Equal(tc.expectedRes, result)
+	}
 }
