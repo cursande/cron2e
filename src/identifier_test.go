@@ -30,7 +30,7 @@ func TestFindParserForStandardExpression(t *testing.T) {
 		assert.Equal( nil, err)
 
 		assert.Equal(
-			&standard.StandardFormat{},
+			standard.StandardFormat{},
 			format,
 			"it returns the correct format for a standard cron expression",
 		)
@@ -53,7 +53,7 @@ func TestFindParserForAWSCronExpression(t *testing.T) {
 		assert.Equal(nil, err)
 
 		assert.Equal(
-			&awscron.AWSCronFormat{},
+			awscron.AWSCronFormat{},
 			format,
 			"it returns the correct format for an AWS cron expression",
 		)
@@ -75,7 +75,7 @@ func TestFindParserForAWSRateExpression(t *testing.T) {
 		assert.Equal(nil, err)
 
 		assert.Equal(
-			&awsrate.AWSRateFormat{},
+			awsrate.AWSRateFormat{},
 			format,
 			"it returns the correct format for an AWS cron expression",
 		)

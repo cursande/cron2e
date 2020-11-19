@@ -177,19 +177,19 @@ func MultipleOrZeroQuestionMarks(expr string) bool {
 	return (occ >= 2 || occ == 0)
 }
 
-func (format *AWSCronFormat) Parse(expr string) (cb *CronBreakdown, parseErrs []error) {
-	cb = &CronBreakdown{}
+func (format AWSCronFormat) Parse(expr string) (cb CronBreakdown, parseErrs []error) {
+	cb = CronBreakdown{}
 
 	if MultipleOrZeroQuestionMarks(expr) {
 		parseErrs = append(parseErrs, errors.New("'?' should only be used to mark day-of-week or day-of-month as unused for AWS Cron"))
-		return nil, parseErrs
+		return cb, parseErrs
 	}
 
 	tokens := strings.Split(expr[5:len(expr) - 1], " ")
 
 	if len(tokens) < requiredFields {
 		parseErrs = append(parseErrs, errors.New("Invalid AWS cron expression, not enough values provided"))
-		return nil, parseErrs
+		return cb, parseErrs
 	}
 
 	var parseErr error

@@ -30,19 +30,19 @@ func matchCronFormat(pattern string, expr string) bool {
 func FormatForExpression(expr string) (Format, error) {
 	if strings.Contains(expr, "cron(") || strings.Contains(expr, "rate(") {
 		if matchCronFormat(awsStandardCron, expr) {
-			return &awscron.AWSCronFormat{}, nil
+			return awscron.AWSCronFormat{}, nil
 		}
 
 		if matchCronFormat(awsRateCron, expr) {
-			return &awsrate.AWSRateFormat{}, nil
+			return awsrate.AWSRateFormat{}, nil
 		}
 	} else {
 		if matchCronFormat(standardCron, expr) {
-			return &standard.StandardFormat{}, nil
+			return standard.StandardFormat{}, nil
 		}
 
 		if matchCronFormat(predefinedCron, expr) {
-			return &predefined.PredefinedFormat{}, nil
+			return predefined.PredefinedFormat{}, nil
 		}
 	}
 

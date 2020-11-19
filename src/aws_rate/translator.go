@@ -32,7 +32,7 @@ func breakdownToStr(timeValue uint8, interval int) string {
 	}
 }
 
-func (format *AWSRateFormat) Translate(expr string) (translation string, errs []error) {
+func (format AWSRateFormat) Translate(expr string) (translation string, errs []error) {
 	breakdown, errs := format.Parse(expr)
 
 	if len(errs) > 0 {

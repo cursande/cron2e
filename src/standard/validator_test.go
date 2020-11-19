@@ -50,7 +50,7 @@ func TestValidateField(t *testing.T) {
 func TestValidate(t *testing.T) {
 	assert := assert.New(t)
 
-	cb := &CronBreakdown{
+	cb := CronBreakdown{
 		minutes: []CronValue{
 			{
 				fieldVal:        5,

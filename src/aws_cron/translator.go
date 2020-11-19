@@ -90,7 +90,7 @@ func fieldContainsOnlyWildcard(cvs []CronValue) bool {
 	return false
 }
 
-func occursEveryDay(cb *CronBreakdown) bool {
+func occursEveryDay(cb CronBreakdown) bool {
 	return (fieldContainsOnlyWildcard(cb.dayMonths) || fieldContainsOnlyWildcard(cb.dayWeeks))
 }
 
@@ -239,7 +239,7 @@ func removeBlank(segments []string) (res []string) {
 	return res
 }
 
-func generateExpression(cb *CronBreakdown) string {
+func generateExpression(cb CronBreakdown) string {
 	segments := []string{}
 
 	if occursEveryDay(cb) {
@@ -265,7 +265,7 @@ func generateExpression(cb *CronBreakdown) string {
 	return fmt.Sprintf("Runs %s", translation)
 }
 
-func (format *AWSCronFormat) Translate(expr string) (translation string, errs []error) {
+func (format AWSCronFormat) Translate(expr string) (translation string, errs []error) {
 	breakdown, errs := format.Parse(expr)
 
 	if len(errs) > 0 {

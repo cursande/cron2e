@@ -132,14 +132,14 @@ func tokenToField(token string, fieldType uint8) (cvs []CronValue, err error) {
 	return cvs, nil
 }
 
-func (format *StandardFormat) Parse(expr string) (breakdown *CronBreakdown, parseErrs []error) {
-	cb := &CronBreakdown{}
+func (format StandardFormat) Parse(expr string) (breakdown CronBreakdown, parseErrs []error) {
+	cb := CronBreakdown{}
 
 	tokens := strings.Split(expr, ` `)
 
 	// This can be removed when we update the regex to prevent an expression like '5 15 3 *' being recognised as a valid format
 	if len(tokens) != 5 {
-		return nil, []error{errors.New("Invalid standard expression, there should only be 5 fields provided")}
+		return cb, []error{errors.New("Invalid standard expression, there should only be 5 fields provided")}
 	}
 
 	var err error

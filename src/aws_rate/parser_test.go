@@ -11,7 +11,7 @@ func TestParse(t *testing.T) {
 
 	result, err := format.Parse("rate(5 minutes)")
 
-	breakdown := &CronBreakdown{
+	breakdown := CronBreakdown{
 		timeValue: Minute,
 		interval:  5,
 	}

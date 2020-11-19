@@ -16,7 +16,7 @@ var exprToTrans = map[string]string{
 	"@reboot":   "Runs after cron daemon reboots",
 }
 
-func (format *PredefinedFormat) Translate(expr string) (translation string, errs []error) {
+func (format PredefinedFormat) Translate(expr string) (translation string, errs []error) {
 	bd, found := exprToTrans[expr]
 
 	if !found {

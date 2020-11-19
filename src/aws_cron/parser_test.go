@@ -11,11 +11,11 @@ func TestParse(t *testing.T) {
 
 	testCases := []struct {
 		expr     string
-		expected *CronBreakdown
+		expected CronBreakdown
 	}{
 		{
 			"cron(0 18 ? * MON-FRI *)",
-			&CronBreakdown{
+			CronBreakdown{
 				minutes:   []CronValue{{fieldVal: 0}},
 				hours:     []CronValue{{fieldVal: 18}},
 				dayMonths: []CronValue{{fieldVal: Unset}},
@@ -26,7 +26,7 @@ func TestParse(t *testing.T) {
 		},
 		{
 			"cron(0 9 2#1 * ? 2007)",
-			&CronBreakdown{
+			CronBreakdown{
 				minutes:   []CronValue{{fieldVal: 0}},
 				hours:     []CronValue{{fieldVal: 9}},
 				dayMonths: []CronValue{{fieldVal: 2, postSepFieldVal: 1, sep: '#'}},

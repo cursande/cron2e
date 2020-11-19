@@ -113,7 +113,7 @@ var genericValidations = []func(CronValue) (bool, error) {
 	validatePostSepIsNotZero,
 }
 
-func (format *AWSCronFormat) Validate(cb *CronBreakdown) (validationErrs []error) {
+func (format AWSCronFormat) Validate(cb CronBreakdown) (validationErrs []error) {
 	validations := []struct {
 		field     []CronValue
 		validator func(int) (bool, error)
